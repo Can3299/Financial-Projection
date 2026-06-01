@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ProCalc | Financial Visualization</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-slate-50 dark:bg-darkBg min-h-screen p-4 md:p-10 text-slate-900 dark:text-slate-100">
+
+    <button onclick="toggleTheme()" class="fixed top-5 right-5 z-50 p-3 bg-white dark:bg-darkCard rounded-full shadow-2xl border border-slate-200 dark:border-slate-700 hover:scale-110 transition-transform">
+        <span id="themeIcon" class="text-xl">🌙</span>
+    </button>
+
+    <div class="max-w-6xl mx-auto space-y-8">
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <div class="lg:col-span-2 bg-white dark:bg-darkCard p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800">
+                <h1 class="text-2xl font-black mb-6 tracking-tight">Financial Projection</h1>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase opacity-60">Principal Amount ($)</label>
+                        <input type="number" id="money" value="1000" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase opacity-60">Annual Interest Rate (%)</label>
+                        <input type="number" id="percentage" value="10" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase opacity-60">Duration</label>
+                        <input type="number" id="time" value="10" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold uppercase opacity-60">Method</label>
+                        <select id="type" class="w-full p-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 transition-colors cursor-pointer">
+                            <option value="compound">Compound Interest</option>
+                            <option value="simple">Simple Interest</option>
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="calculate()" class="w-full mt-8 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-blue-200 dark:shadow-none">
+                    Analyze & Update Chart
+                </button>
+            </div>
+
+            <div id="infoBox" class="bg-blue-600 dark:bg-indigo-900 text-white p-8 rounded-3xl shadow-xl flex flex-col transition-colors duration-500">
+                <h3 class="text-xl font-bold mb-5 flex items-center gap-2">
+                    <span class="p-2 bg-white/20 rounded-lg text-sm italic">i</span>
+                    How is it calculated?
+                </h3>
+                <div class="space-y-5 text-white/90 text-sm leading-relaxed flex-1">
+
+                    <div>
+                        <strong class="text-white text-base block mb-1">Compound Interest</strong>
+                        <p class="text-white/80 text-xs mb-2">Interest is calculated on the initial principal and the accumulated interest of previous periods.</p>
+                        <div class="bg-black/20 p-3 rounded-xl font-mono text-xs border border-white/10">
+                            <code>Result = P * (1 + r)^t</code>
+                        </div>
+                    </div>
+
+                    <hr class="border-white/20">
+
+                    <div>
+                        <strong class="text-white text-base block mb-1">Simple Interest</strong>
+                        <p class="text-white/80 text-xs mb-2">Interest is calculated solely on the principal amount. The growth is constant every duration.</p>
+                        <div class="bg-black/20 p-3 rounded-xl font-mono text-xs border border-white/10">
+                            <code>Result = P * (1 + (r * t))</code>
+                        </div>
+                    </div>
+
+                    <ul class="space-y-1 text-xs opacity-90 mt-4 bg-white/10 p-4 rounded-xl">
+                        <li>• <strong>P:</strong> Principal (Initial money)</li>
+                        <li>• <strong>r:</strong> Interest rate (As a decimal)</li>
+                        <li>• <strong>t:</strong> Time (Number of periods)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+            <div class="bg-white dark:bg-darkCard p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 lg:col-span-3">
+                <h3 class="text-lg font-bold mb-4">Growth Chart</h3>
+                <div class="chart-container">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-darkCard p-8 rounded-3xl shadow-xl border border-slate-100 dark:border-slate-800 flex flex-col items-center justify-center text-center transition-colors">
+                <div class="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-2xl mb-4">
+                    <svg class="w-8 h-8 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <p class="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-2">Estimated Balance</p>
+                <h2 id="finalResult" class="text-4xl lg:text-5xl font-black bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 text-transparent bg-clip-text pb-1">$0.00</h2>
+                <div id="profitTag" class="mt-3 inline-flex items-center px-4 py-2 rounded-full text-sm font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 ring-1 ring-emerald-500/20">
+                    +0.0% Total Return
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/theme.js"></script>
+    <script src="js/calculator.js"></script>
+    <script src="js/chart.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
