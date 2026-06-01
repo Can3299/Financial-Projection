@@ -1,4 +1,4 @@
-# ProCalc — Financial Visualization
+# ProCalc — Financial Projection
 
 An interactive financial projection calculator that visualizes investment growth over time using compound or simple interest.
 
